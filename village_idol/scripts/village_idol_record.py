@@ -71,3 +71,4 @@ def handler(session, args):
     session.setInputCallback(input_callback, vir)
     vir.main()
     consoleLog("info", "Exiting\n")
+    session.unsetInputCallback()
