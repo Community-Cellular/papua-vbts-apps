@@ -12,23 +12,10 @@ STATES = {"INTRO":0,
 
 BEEP = "tone_stream://%(500,475,1000)"
 
-last_dtmf = sys.maxint
-#this shit again
-
 def input_callback(session, what, obj, arg):
-    global last_dtmf
     if (what == "dtmf"):
-        #this took me three goddamn hours to figure out -k
-        duration = ctypes.cast(obj.duration.__long__(), ctypes.POINTER(ctypes.c_uint32)).contents.value
-        consoleLog("info", what + " " + obj.digit + " "  + str(duration) + " in state: " + str(arg.state) + "\n")
-        if (duration >= last_dtmf):
-            #ignore it
-            consoleLog("info", "%d Ignoring repeated DTMF\n" % (last_dtmf,))
-            last_dtmf = duration
-            #no-op
-            return "Speed:0"
-        else:
-            last_dtmf = duration
+        #duration = ctypes.cast(obj.duration.__long__(), ctypes.POINTER(ctypes.c_uint32)).contents.value
+        consoleLog("info", what + " " + obj.digit +  " in state: " + str(arg.state) + "\n")
         if (arg.state == STATES["INTRO"]):
             if (obj.digit == "1"):
                 arg.change_state("RECORDING")
@@ -48,12 +35,14 @@ class VillageIdolRecorder:
         self.session = session            
         self.fs = FreeSwitchMessenger.FreeSwitchMessenger()
         self.state = STATES["INTRO"]
+        self.loops = 0
         
     def main(self):
         user = self.session.getVariable("username")
         console_log("info", "username:: %s\n" % user)
         file_loc = REC_HOME + user + ".gsm"
-        while (True):
+        while (self.loops < 10):
+            self.loops += 1
             if (self.state == STATES["INTRO"]):
                 thing2say = PLAY_HOME + "intro.wav"
                 self.session.streamFile(thing2say)
@@ -68,16 +57,17 @@ class VillageIdolRecorder:
                 #any button causes exit
                 self.session.streamFile(file_loc)
                 #transition back to intro
-            else:
-                exit(1)
+
 
     def change_state(self, state):
         consoleLog("info", "Changing state from %s to %s\n" % (self.state, STATES[state]))
-        if state in STATES.keys():
-            self.state = STATES[state]
+        if (self.state != STATES[state]):
+            self.loops = 0
+            if state in STATES.keys():
+                self.state = STATES[state]
 
 def handler(session, args):
     vir = VillageIdolRecorder(session)
     session.setInputCallback(input_callback, vir)
-    session.answer()
     vir.main()
+    consoleLog("info", "Exiting\n")
