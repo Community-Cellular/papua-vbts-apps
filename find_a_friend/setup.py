@@ -11,6 +11,7 @@ setup(name="find_a_friend",
       scripts=[],
       install_requires=['libvbts'],
       data_files=[
-        ("/usr/local/freeswitch/scripts",['scripts/find_a_friend.py'])
+        ("/usr/local/freeswitch/scripts",['scripts/find_a_friend.py']),
+        ("/usr/local/freeswitch/scripts",['scripts/set_a_friend.py'])
         ]
       )

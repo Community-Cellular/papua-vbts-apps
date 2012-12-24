@@ -70,15 +70,23 @@ class FriendDB:
         else:
             return random.choice(users)[0]
 
+    def set_friendship(self, f1, f2):
+        for p in [(f1,f2),(f2,f1)]:
+            self.cur.execute('INSERT INTO %s (friend) VALUES (?)' % p[0], (p[1],))
+        self.conn.commit()
+
 class FindAFriend:
 
     def __init__(self):
         self.fs = FreeSwitchMessenger.FreeSwitchMessenger()
         
-    def main(self, username):
+    def find_friend(self, username):
         user = username
-        console_log("info", "username:: %s\n" % user)
+        console_log("info", "username: %s\n" % user)
         fdb = FriendDB()
         return fdb.find_friend(username)
-
-
+    
+    def set_friendship(self, f1, f2):
+        console_log("info", "f1: %s f2: %s\n" % (f1,f2))
+        fdb = FriendDB()
+        fdb.set_friendship(f1,f2)

@@ -25,24 +25,17 @@
 #or implied, of Kurtis Heimerl.
 
 from vbts_faf import FindAFriend
-from freeswitch import *
 
-def run(username):
+def run(args):
+    args = args.split("|")
     vir = FindAFriend.FindAFriend()
-    res = vir.find_friend(username)
-    return str(res)
+    vir.set_friendship(args[0].strip(), args[1].strip())
  
 def chat(message, args):
     res = run(args)
-    consoleLog('info', "Returned Chat: " + res + "\n")
-    message.chat_execute('set', '_openbts_ret=%s' % res)
 
 def fsapi(session, stream, env, args):
     res = run(args)
-    consoleLog('info', "Returned FSAPI: " + res + "\n")
-    stream.write(res)
 
 def handler(session, args):
     res = run(args)
-    consoleLog("info", "Returned Handler: " + res + "\n")
-    session.execute('set', '_openbts_ret=%s' % res)
