@@ -6,9 +6,10 @@ setup(name="find_a_friend",
       author="Kurtis Heimerl",
       author_email="kheimerl@cs.berkeley.edu",
       url="http://tier.cs.berkeley.edu",
+      packages=['vbts_faf'],
       license='BSD',
       scripts=[],
-      install_requires=['python-messaging', 'libvbts'],
+      install_requires=['libvbts'],
       data_files=[
         ("/usr/local/freeswitch/scripts",['scripts/find_a_friend.py'])
         ]
