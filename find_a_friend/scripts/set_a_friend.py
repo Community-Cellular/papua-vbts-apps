@@ -24,9 +24,11 @@
 #authors and should not be interpreted as representing official policies, either expressed
 #or implied, of Kurtis Heimerl.
 
+from freeswitch import *
 from vbts_faf import FindAFriend
 
 def run(args):
+    consoleLog('info', "Got args:" + args + "\n")
     args = args.split("|")
     vir = FindAFriend.FindAFriend()
     vir.set_friendship(args[0].strip(), args[1].strip())
