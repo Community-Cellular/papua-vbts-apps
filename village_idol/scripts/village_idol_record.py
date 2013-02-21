@@ -27,7 +27,7 @@ from libvbts import FreeSwitchMessenger
 from freeswitch import *
 import os, sys, time, ctypes
 
-REC_HOME = "/tmp/"
+REC_HOME = "/var/www/village_idol/"
 
 PLAY_HOME = "/usr/local/freeswitch/sounds/"
 
