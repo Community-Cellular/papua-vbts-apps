@@ -32,7 +32,8 @@ REC_HOME = "/var/www/village_idol/"
 PLAY_HOME = "/usr/local/freeswitch/sounds/"
 
 STATES = {"INTRO":0,
-          "PLAYING":1}
+          "PLAYING":1,
+          "FINISHED":2}
 
 BEEP = "tone_stream://%(500,475,1000)"
 
@@ -41,7 +42,7 @@ def input_callback(session, what, obj, arg):
         if (arg.state == STATES["INTRO"]):
             arg.change_state("PLAYING")
         elif(arg.state == STATES["PLAYING"] and arg.file):
-            vote_file = arg.generate_vote_file()
+            vote_file = arg.generate_vote_file(arg.file)
             f = open(vote_file, 'w')
             f.write(obj.digit)
             f.close()
@@ -59,41 +60,46 @@ class VillageIdolVoter:
         self.fs = FreeSwitchMessenger.FreeSwitchMessenger()
         self.state = STATES["INTRO"]
         self.loops = 0
+        self.start = True
 
-    def generate_vote_file(self):
-        return self.file + "." + self.username + ".vote"
+    def generate_vote_file(self, filename):
+        return filename + "." + self.username + ".vote"
 
     def get_files(self):
         all_audio_files = glob.glob(REC_HOME + "*.gsm")
         need_voting = []
-        for f in audio_files:
-            if not (os.path.exists(generate_vote_file())):
+        for f in all_audio_files:
+            if not (os.path.exists(self.generate_vote_file(f))):
                 need_voting.append(f)
                 
         return need_voting
 
     def main(self):
         self.username = self.session.getVariable("username")
-        console_log("info", "username:: %s\n" % user)
+        console_log("info", "username:: %s\n" % self.username)
         while (self.loops < 10):
             self.loops += 1
             if (self.state == STATES["INTRO"]):
-                files = get_files().
+                files = self.get_files()
                 if (len(files) == 0):
+                    self.change_state("FINISHED")
+                else:
+                    self.file = random.choice(files)
+                    if (self.start):
+                        thing2say = PLAY_HOME + "vote_intro.wav"
+                        self.session.streamFile(thing2say)
+                        self.start = False
+                    self.change_state("PLAYING")
+            elif (self.state == STATES["PLAYING"]):
+                #any button causes exit
+                self.session.streamFile(self.file)
+                self.session.streamFile(BEEP)
+                #stay in this state until voted
+            elif (self.state == STATES["FINISHED"]):
                     self.file = None
                     thing2say = PLAY_HOME + "vote_fail.wav"
                     self.session.streamFile(thing2say)
                     return
-                else:
-                    self.file = random.choice(files)
-                    thing2say = PLAY_HOME + "vote_intro.wav"
-                    self.session.streamFile(thing2say)
-                    change_stage("PLAYING")
-            elif (self.state == STATES["PLAYING"]):
-                #any button causes exit
-                self.session.streamFile(self.file)
-                #stay in this state until voted
-
 
     def change_state(self, state):
         consoleLog("info", "Changing state from %s to %s\n" % (self.state, STATES[state]))
@@ -104,7 +110,7 @@ class VillageIdolVoter:
 
 def handler(session, args):
     viv = VillageIdolVoter(session)
-    session.setInputCallback(input_callback, vir)
+    session.setInputCallback(input_callback, viv)
     viv.main()
     consoleLog("info", "Exiting\n")
     session.unsetInputCallback()
