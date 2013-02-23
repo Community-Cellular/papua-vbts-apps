@@ -25,29 +25,27 @@
 #or implied, of Kurtis Heimerl.
 from libvbts import FreeSwitchMessenger
 from freeswitch import *
-import os, sys, time, ctypes
+import os, glob, random
 
 REC_HOME = "/var/www/village_idol/"
 
 PLAY_HOME = "/usr/local/freeswitch/sounds/"
 
 STATES = {"INTRO":0,
-          "RECORDING":1,
-          "PLAYING":2}
+          "PLAYING":1}
 
 BEEP = "tone_stream://%(500,475,1000)"
 
 def input_callback(session, what, obj, arg):
     if (what == "dtmf"):
-        #duration = ctypes.cast(obj.duration.__long__(), ctypes.POINTER(ctypes.c_uint32)).contents.value
-        consoleLog("info", what + " " + obj.digit +  " in state: " + str(arg.state) + "\n")
         if (arg.state == STATES["INTRO"]):
-            if (obj.digit == "1"):
-                arg.change_state("RECORDING")
-            elif (obj.digit == "2"):
-                arg.change_state("PLAYING")
-            else:
-                pass
+            arg.change_state("PLAYING")
+        elif(arg.state == STATES["PLAYING"] and arg.file):
+            vote_file = arg.generate_vote_file()
+            f = open(vote_file, 'w')
+            f.write(obj.digit)
+            f.close()
+            arg.change_state("INTRO")
         else:
             arg.change_state("INTRO")
     else:
@@ -61,27 +59,40 @@ class VillageIdolRecorder:
         self.fs = FreeSwitchMessenger.FreeSwitchMessenger()
         self.state = STATES["INTRO"]
         self.loops = 0
-        
+
+    def generate_vote_file(self):
+        return self.file + "." + self.username + ".vote"
+
+    def get_files(self):
+        all_audio_files = glob.glob(REC_HOME + "*.gsm")
+        need_voting = []
+        for f in audio_files:
+            if not (os.path.exists(generate_vote_file())):
+                need_voting.append(f)
+                
+        return need_voting
+
     def main(self):
-        user = self.session.getVariable("username")
+        self.username = self.session.getVariable("username")
         console_log("info", "username:: %s\n" % user)
-        file_loc = REC_HOME + user + ".gsm"
         while (self.loops < 10):
             self.loops += 1
             if (self.state == STATES["INTRO"]):
-                thing2say = PLAY_HOME + "record_intro.wav"
-                self.session.streamFile(thing2say)
-                #stay in this state
-            elif (self.state == STATES["RECORDING"]):
-                self.session.streamFile(BEEP)
-                self.session.recordFile(file_loc, 60*3) 
-                self.session.streamFile(BEEP)
-                #transition back to intro
-                self.change_state("INTRO")
+                files = get_files().
+                if (len(files) == 0):
+                    self.file = None
+                    thing2say = PLAY_HOME + "vote_fail.wav"
+                    self.session.streamFile(thing2say)
+                    self.session.hangup()
+                else:
+                    self.file = random.choice(files)
+                    thing2say = PLAY_HOME + "vote_intro.wav"
+                    self.session.streamFile(thing2say)
+                    change_stage("PLAYING")
             elif (self.state == STATES["PLAYING"]):
                 #any button causes exit
-                self.session.streamFile(file_loc)
-                #transition back to intro
+                self.session.streamFile(self.file)
+                #stay in this state until voted
 
 
     def change_state(self, state):
