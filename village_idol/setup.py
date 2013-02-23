@@ -11,7 +11,10 @@ setup(name="village_idol",
       install_requires=['python-messaging', 'libvbts'],
       data_files=[
         ("/usr/local/freeswitch/scripts",['scripts/village_idol_record.py']),
-        ("/usr/local/freeswitch/sounds", ['sounds/intro.wav'])
+        ("/usr/local/freeswitch/scripts",['scripts/village_idol_vote.py']),
+        ("/usr/local/freeswitch/sounds", ['sounds/record_intro.wav']),
+        ("/usr/local/freeswitch/sounds", ['sounds/vote_intro.wav']),
+        ("/usr/local/freeswitch/sounds", ['sounds/vote_fail.wav']),
 
         ]
       )

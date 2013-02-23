@@ -52,7 +52,7 @@ def input_callback(session, what, obj, arg):
         consoleLog("info", what + " " + obj.serialize() + "\n")
     return "stop"
 
-class VillageIdolRecorder:
+class VillageIdolVoter:
 
     def __init__(self, session):
         self.session = session            
@@ -83,7 +83,7 @@ class VillageIdolRecorder:
                     self.file = None
                     thing2say = PLAY_HOME + "vote_fail.wav"
                     self.session.streamFile(thing2say)
-                    self.session.hangup()
+                    return
                 else:
                     self.file = random.choice(files)
                     thing2say = PLAY_HOME + "vote_intro.wav"
@@ -103,8 +103,8 @@ class VillageIdolRecorder:
                 self.state = STATES[state]
 
 def handler(session, args):
-    vir = VillageIdolRecorder(session)
+    viv = VillageIdolVoter(session)
     session.setInputCallback(input_callback, vir)
-    vir.main()
+    viv.main()
     consoleLog("info", "Exiting\n")
     session.unsetInputCallback()
