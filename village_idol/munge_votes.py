@@ -22,6 +22,6 @@ for v in sys.argv[1:]:
         vote = int(f.readline())
         insert_vote(m.group(1), vote)
 
-print ("VOTE FILE,MEAN,MEDIAN")
+print ("VOTE FILE,N,MEAN,MEDIAN")
 for t in VOTES.keys():
-    print (t + ".gsm," + str(numpy.mean(VOTES[t])) + "," + str(numpy.median(VOTES[t])))
+    print (t + ".gsm," + str(len(VOTES[t])) + "," + str(numpy.mean(VOTES[t])) + "," + str(numpy.median(VOTES[t])))
